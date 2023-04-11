@@ -32,7 +32,7 @@ int main(int argc, char *argv[], char *env[])
     while (fread(currentEntry, 1, 32, fp) == 32)
     {
         // check if current entry is a long entry
-        if (currentEntry[11] == 1)
+        if (currentEntry[11] && 0x01)
         {
             //if current entry is long, process as a long entry
         }
@@ -43,6 +43,9 @@ int main(int argc, char *argv[], char *env[])
         //print entry
         printf("ENTRY HERE\n");
     }
+
+    //print summary of files
+    printf("SUMMARY HERE\n");
 
     fclose(fp);
 }
