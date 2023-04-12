@@ -44,7 +44,8 @@ int main(int argc, char *argv[], char *env[])
             }
         }
 
-        getCreatedDate(entry.shortEntry);
+        char* dateString;
+        dateString = getCreatedDateAndTime(entry.shortEntry);
 
         //print entry
         printf("ENTRY HERE\n");
