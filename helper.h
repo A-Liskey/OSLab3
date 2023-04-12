@@ -29,7 +29,17 @@ struct longEntry
 
 union Entry
 {
-    struct shortEntry;
-    struct longEntry;
+    struct shortEntry shortEntry;
+    struct longEntry longEntry;
 };
 
+char* getCreatedDate(struct shortEntry entry) {
+    
+    //store month day and year starting at MS-DOS Epoch of 01/01/1980
+    unsigned int month = 1, day = 1, year = 1980, hours = 0, minutes = 0, seconds = 0;
+
+    day += entry.WrtDate    & 0b0000000000011111;
+    month += (entry.WrtDate & 0b0000000111100000) >> 6;
+    year += (entry.WrtDate  & 0b1111111000000000) >> 10;
+
+}

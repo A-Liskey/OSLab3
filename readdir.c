@@ -21,24 +21,30 @@ int main(int argc, char *argv[], char *env[])
         return 1;
     }
 
-    // stores current entry as an array of 32 bytes
-    unsigned char currentEntry[32];
+    // stores current entry
+    union Entry entry;
 
-    // // print root directory name
-    // fread(currentEntry, 1, 32, fp);
-    // printf("Directory of %.*s\n", 11, currentEntry);
-
-    // Read all entries and print info
-    while (fread(currentEntry, 1, 32, fp) == 32)
+    // Read all entries and print info until we reach a file where the first 2 bytes are ____
+    while (true)
     {
-        // check if current entry is a long entry
-        if (currentEntry[11] && 0x01)
-        {
-            //if current entry is long, process as a long entry
+        fread(&entry, 32, 1, fp);
+
+        //create variables to store all file details
+
+        //get file attributes
+        
+        //get all details unique to a short entry
+
+        //check if entry is long
+        if(false) {
+
+            //if the entry is long, read the next entry until the end of the long entry is found
+            while(true) {
+
+            }
         }
-        else {
-            //if current entry is not long, process as a short entry
-        }
+
+        getCreatedDate(entry.shortEntry);
 
         //print entry
         printf("ENTRY HERE\n");
