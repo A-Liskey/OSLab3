@@ -1,5 +1,10 @@
 #pragma pack(push,1)
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
 struct shortEntry {
     unsigned char Name[11];
     unsigned char Attr;
@@ -34,7 +39,7 @@ union Entry
     struct longEntry longEntry;
 };
 
-char* getCreatedDateAndTime(struct shortEntry entry) {
+char* getLastWriteDateAndTime(struct shortEntry entry) {
     
     //store month day and year starting at MS-DOS Epoch of 01/01/1980
     unsigned int month = 1, day = 1, year = 1980, hours = 0, minutes = 0, seconds = 0;
@@ -63,3 +68,33 @@ char* getCreatedDateAndTime(struct shortEntry entry) {
     snprintf(str, 21, "%02d/%02d/%02d  %02d:%02d %s", month, day, year, hours, minutes, midday);
     return str;
 }
+
+void prependString(char* dest, char* src) {
+    int length = strlen(src);
+    memmove(dest + length, dest, strlen(dest) + 1);
+    memcpy(dest, src, length);
+}
+
+void intToStringWithCommas(int num, char* str) {
+    char numberString[20];
+    sprintf(numberString, "%d", num);
+    int length = strlen(numberString);
+
+    int valueIndex = 0, commaIndex = 0;
+    while(numberString[valueIndex] != 0) {
+        if(length % 3) {
+           str[commaIndex] = numberString[valueIndex];
+        }
+        else {
+            if(commaIndex != 0) {
+                str[commaIndex++] = ',';
+            }
+            str[commaIndex] = numberString[valueIndex];
+        }
+
+        commaIndex++;
+        valueIndex++;
+        length--;    
+    }
+}
+
