@@ -42,7 +42,7 @@ union Entry
 char* getLastWriteDateAndTime(struct shortEntry entry) {
     
     //store month day and year starting at MS-DOS Epoch of 01/01/1980
-    unsigned int month = 1, day = 1, year = 1980, hours = 0, minutes = 0, seconds = 0;
+    unsigned int month = 0, day = 0, year = 1980, hours = 0, minutes = 0, seconds = 0;
 
     //extract bit ranges for each parameter and shift to get integer values
     day   +=  entry.WrtDate & 0b0000000000011111;
@@ -69,31 +69,25 @@ char* getLastWriteDateAndTime(struct shortEntry entry) {
     return str;
 }
 
-void prependString(char* dest, char* src) {
-    int length = strlen(src);
-    memmove(dest + length, dest, strlen(dest) + 1);
-    memcpy(dest, src, length);
-}
-
 void intToStringWithCommas(int num, char* str) {
     char numberString[20];
     sprintf(numberString, "%d", num);
     int length = strlen(numberString);
 
-    int valueIndex = 0, commaIndex = 0;
-    while(numberString[valueIndex] != 0) {
+    int numberIndex = 0, strIndex = 0;
+    while(numberString[numberIndex] != 0) {
         if(length % 3) {
-           str[commaIndex] = numberString[valueIndex];
+           str[strIndex] = numberString[numberIndex];
         }
         else {
-            if(commaIndex != 0) {
-                str[commaIndex++] = ',';
+            if(strIndex != 0) {
+                str[strIndex++] = ',';
             }
-            str[commaIndex] = numberString[valueIndex];
+            str[strIndex] = numberString[numberIndex];
         }
 
-        commaIndex++;
-        valueIndex++;
+        strIndex++;
+        numberIndex++;
         length--;    
     }
 }
