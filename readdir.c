@@ -1,3 +1,10 @@
+/*
+Andrew Liskey 04/13/2023
+
+This program will take in a directory from the command line and print out a directory listing.
+*/
+
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,13 +18,16 @@
 int main(int argc, char *argv[], char *env[])
 {
 
-    FILE *fp = fopen("Directory.dat", "r"); // DEBUG VERSION ONLY =======================
-    // FILE *fp = fopen(argv[1], "r");
+    //FILE *fp = fopen("Directory.dat", "r"); // DEBUG VERSION ONLY =======================
+    FILE *fp = fopen(argv[1], "r");
     if (fp == NULL)
     {
         printf("File not found\n");
         return 1;
     }
+
+    //store directory summary values
+    int numFiles = 0, totalSize = 0;
 
     // Read all entries and print info until we reach a file where the first byte is 0x00
     while (true)
@@ -44,49 +54,47 @@ int main(int argc, char *argv[], char *env[])
         }
 
         // create variables to store all entry details
-        unsigned char *dateString = "", shortFileName[13], *longFileName = "";
+        unsigned char *dateString = "", shortFileName[13] = {}, longFileName[256] = {};
         unsigned int size, clusterNum;
 
         // look at attributes to determine what to do with entry
         char attributes = entry.shortEntry.Attr;
 
         // if the entry has a long filename: find long filename and extension
-        if ((attributes & 0x0F) == 0x0F)
+        if (((attributes & 0x0F) == 0x0F))
         {
 
-            // read the next entry until the first long entry is found
-            unsigned char *nameSegment;
-            do
+            // read all long entries into an array
+            struct longEntry longEntries[11] = {}; 
+            int numEntries = 0;
+            while ((entry.longEntry.Attr) == 0x0F) 
             {
-                // read next entry and prepend name value and file extension
+                longEntries[numEntries++] = entry.longEntry;
                 fread(&entry, 32, 1, fp);
-                nameSegment = malloc(26 + strlen(longFileName));
+            } 
 
-                // build name segment
+            for(int j = numEntries - 1; j >= 0; j--) {
+                struct longEntry curEntry = longEntries[j];
+                unsigned char nameSegment[26] = {};
                 int nameIndex = 0;
                 for (int i = 0; i < 10; i += 2)
                 {
-                    nameSegment[nameIndex++] = entry.longEntry.Name1[i];
+                    nameSegment[nameIndex++] = curEntry.Name1[i];
                 }
                 for (int i = 0; i < 12; i += 2)
                 {
-                    nameSegment[nameIndex++] = entry.longEntry.Name2[i];
+                    nameSegment[nameIndex++] = curEntry.Name2[i];
                 }
                 for (int i = 0; i < 4; i += 2)
                 {
-                    nameSegment[nameIndex++] = entry.longEntry.Name3[i];
+                    nameSegment[nameIndex++] = curEntry.Name3[i];
                 }
 
-                // append name to namesegment
-                longFileName = malloc(nameIndex);
                 strncat(longFileName, nameSegment, nameIndex);
-            } while ((entry.longEntry.Ord & 1) != 1);
+            }
 
-            //add null terminator to string
+            //add null terminator to end of string
             longFileName[strlen(longFileName)] = '\000';
-
-            // go to next entry (will be a short entry)
-            fread(&entry, 32, 1, fp);
         }
         else if ((attributes & 0x02) == 0x02)
         {
@@ -131,7 +139,7 @@ int main(int argc, char *argv[], char *env[])
             }
             shortFileName[nameIndex++] = entry.shortEntry.Name[i];
         }
-        //add null terminator to string
+        // add null terminator to string
         shortFileName[nameIndex] = '\000';
 
         // get shortEntry details
@@ -152,10 +160,16 @@ int main(int argc, char *argv[], char *env[])
 
         // indent line
         printf("\n");
+
+        //update summary values
+        numFiles++;
+        totalSize += size;
     }
 
     // print summary of files
-    printf("SUMMARY HERE\n");
+    char totalSizeString[20] = {};
+    intToStringWithCommas(totalSize, totalSizeString);
+    printf("\n%d File(s) %s Bytes\n", numFiles, totalSizeString);
 
     fclose(fp);
 }
