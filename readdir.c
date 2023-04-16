@@ -18,7 +18,7 @@ This program will take in a directory from the command line and print out a dire
 int main(int argc, char *argv[], char *env[])
 {
 
-    //FILE *fp = fopen("Directory.dat", "r"); // DEBUG VERSION ONLY =======================
+    //read file name from command line and open
     FILE *fp = fopen(argv[1], "r");
     if (fp == NULL)
     {
@@ -58,10 +58,8 @@ int main(int argc, char *argv[], char *env[])
         unsigned int size, clusterNum;
 
         // look at attributes to determine what to do with entry
-        char attributes = entry.shortEntry.Attr;
-
         // if the entry has a long filename: find long filename and extension
-        if (((attributes & 0x0F) == 0x0F))
+        if (((entry.shortEntry.Attr & 0x0F) == 0x0F))
         {
 
             // read all long entries into an array
@@ -96,35 +94,23 @@ int main(int argc, char *argv[], char *env[])
             //add null terminator to end of string
             longFileName[strlen(longFileName)] = '\000';
         }
-        else if ((attributes & 0x02) == 0x02)
+        else if ((entry.shortEntry.Attr & 0x02) == 0x02)
         {
             // if entry is hidden: don't display (move on to next entry)
             continue;
         }
-        else if ((attributes & 0x04) == 0x04)
+        else if ((entry.shortEntry.Attr & 0x04) == 0x04)
         {
             // if entry is protected: don't display (move on to next entry)
             continue;
         }
-        else if ((attributes & 0x08) == 0x08)
+        else if ((entry.shortEntry.Attr & 0x08) == 0x08)
         {
             // if entry is a volume name: display volume name
             printf("Volume in drive X is %s\n\nDirectory of X:\\\n", entry.shortEntry.Name);
             continue;
         }
-        else if ((attributes & 0x10) == 0x10)
-        {
-            // if entry is a subdirectory: ignore for this project
-
-            // strncpy(shortFileName, entry.shortEntry.Name, 8);
-            // dateString = getLastWriteDateAndTime(entry.shortEntry);
-            // clusterNum = (entry.shortEntry.FstClusHI << 16) | (entry.shortEntry.FstClusLO);
-            // size = entry.shortEntry.FileSize;
-
-            // printf("%s  %5d  %-13s %s\n", dateString, clusterNum, "<DIR>", shortFileName);
-            continue;
-        }
-
+        
         // build short filename with extension
         int nameIndex = 0;
         for (int i = 0; i < 12; i++)
@@ -139,6 +125,7 @@ int main(int argc, char *argv[], char *env[])
             }
             shortFileName[nameIndex++] = entry.shortEntry.Name[i];
         }
+        
         // add null terminator to string
         shortFileName[nameIndex] = '\000';
 
@@ -148,6 +135,13 @@ int main(int argc, char *argv[], char *env[])
         size = entry.shortEntry.FileSize;
         char sizeString[20] = {};
         intToStringWithCommas(size, sizeString);
+
+        if ((entry.shortEntry.Attr & 0x10) == 0x10)
+        {
+            // if entry is a subdirectory: change sizeString to <DIR>
+            strncpy(sizeString, "<DIR>          ", 13);
+        }
+
 
         // print short entry details
         printf("%s  %7d  %13s %-12s ", dateString, clusterNum, sizeString, shortFileName);
